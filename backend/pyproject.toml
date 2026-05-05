@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evol-erp-ai-assistant"
+version = "0.1.0"
+description = "Assistente de IA para Suporte do ERP Evol"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.6.0",
+    "qdrant-client>=1.12.0",
+    "openai>=1.57.0",
+    "pdfplumber>=0.11.0",
+    "pdf2image>=1.17.0",
+    "pillow>=10.0.0",
+    "python-docx>=1.1.2",
+    "python-dotenv>=1.0.0",
+    "tiktoken>=0.8.0",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "hypothesis==6.122.3",
+    "pytest==8.3.4",
+    "pytest-asyncio==0.24.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "scripts*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
