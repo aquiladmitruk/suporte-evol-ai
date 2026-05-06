@@ -21,11 +21,12 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick }: C
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
+  // Tela inicial: só exibe quando não há mensagens E não está carregando
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
 
-        {/* Sugestões de perguntas — lado a lado, acima do ícone */}
+        {/* Sugestões de perguntas */}
         <div className="flex flex-row gap-3 w-full max-w-xl mb-8">
           {SUGGESTIONS.map((suggestion) => (
             <button
@@ -71,8 +72,12 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick }: C
     );
   }
 
+  // Histórico de mensagens — inclui TypingIndicator quando carregando.
+  // Este branch também cobre o caso em que isLoading=true mas messages ainda
+  // está vazio (race condition entre setMessages e setIsLoading), evitando
+  // que a tela fique branca enquanto aguarda a resposta.
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto bg-white dark:bg-gray-950">
       <div className="max-w-3xl mx-auto py-4 pb-2">
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
