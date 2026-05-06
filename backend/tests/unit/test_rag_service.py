@@ -183,6 +183,7 @@ async def test_retrieve_chunks_passes_correct_params_to_qdrant():
         query_vector=[0.5, 0.6],
         limit=3,
         score_threshold=0.8,
+        query_filter=None,
     )
 
 

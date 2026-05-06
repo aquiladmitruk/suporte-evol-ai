@@ -13,8 +13,6 @@ from app.models import (
     ChatMessage,
     ChatRequest,
     ChatResponse,
-    Chunk,
-    ChunkMetadata,
     RetrievedChunk,
     SourceReference,
 )
@@ -145,23 +143,3 @@ class TestRetrievedChunk:
         assert chunk.score == 0.92
 
 
-# ---------------------------------------------------------------------------
-# ChunkMetadata e Chunk
-# ---------------------------------------------------------------------------
-
-
-class TestChunkMetadata:
-    def test_minimal(self):
-        meta = ChunkMetadata(filename="doc.txt", position=0, chunk_index=0)
-        assert meta.page is None
-
-    def test_with_page(self):
-        meta = ChunkMetadata(filename="doc.pdf", page=5, position=2, chunk_index=1)
-        assert meta.page == 5
-
-
-class TestChunk:
-    def test_valid(self):
-        meta = ChunkMetadata(filename="doc.txt", position=0, chunk_index=0)
-        chunk = Chunk(content="Conteúdo do chunk", metadata=meta)
-        assert chunk.content == "Conteúdo do chunk"

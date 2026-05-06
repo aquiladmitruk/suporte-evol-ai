@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
 
     QDRANT_API_KEY: Optional[str] = None
-    QDRANT_COLLECTION: str = "evol_docs"
+    QDRANT_COLLECTION: str = "documents"
     RAG_TOP_K: int = 5
     RAG_SIMILARITY_THRESHOLD: float = 0.7
     SESSION_TTL_SECONDS: int = 3600

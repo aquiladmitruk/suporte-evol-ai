@@ -29,7 +29,11 @@ NO_CONTEXT_INSTRUCTION = (
 class PromptBuilder:
     """Constrói prompts para o LLM com restrições de escopo e contexto RAG."""
 
-    def build_system_prompt(self, retrieved_chunks: list[RetrievedChunk]) -> str:
+    def build_system_prompt(
+        self,
+        retrieved_chunks: list[RetrievedChunk],
+        source_file: str | None = None,
+    ) -> str:
         """
         Constrói o system prompt com a instrução de restrição de escopo e o
         contexto de documentação recuperado pelo pipeline RAG.
@@ -37,11 +41,20 @@ class PromptBuilder:
         Args:
             retrieved_chunks: Lista de chunks recuperados do banco vetorial.
                 Se vazia, inclui instrução de fallback informando ausência de contexto.
+            source_file: Se informado, adiciona instrução explícita para o LLM
+                responder apenas com base neste documento.
 
         Returns:
             String com o system prompt completo.
         """
         parts = [SCOPE_RESTRICTION_INSTRUCTION]
+
+        if source_file:
+            parts.append(
+                f"O usuário está perguntando especificamente sobre o documento "
+                f"'{source_file}'. Responda EXCLUSIVAMENTE com base nas informações "
+                f"deste documento. Não utilize informações de outros documentos."
+            )
 
         if retrieved_chunks:
             total = len(retrieved_chunks)

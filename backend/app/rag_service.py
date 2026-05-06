@@ -35,17 +35,24 @@ class RAGService:
         self._similarity_threshold = similarity_threshold
         self._collection_name = collection_name
 
-    async def retrieve_chunks(self, query: str) -> list[RetrievedChunk]:
+    async def retrieve_chunks(
+        self,
+        query: str,
+        source_file: str | None = None,
+    ) -> list[RetrievedChunk]:
         """
         Recupera os chunks mais relevantes para a query fornecida.
 
         O pipeline executa:
         1. Gera o embedding da query via EmbeddingService.
-        2. Busca no Qdrant os top-K chunks acima do limiar de similaridade.
+        2. Busca no Qdrant os top-K chunks acima do limiar de similaridade,
+           opcionalmente filtrando por source_file.
         3. Mapeia os resultados para RetrievedChunk com content, score e metadata.
 
         Args:
             query: Texto da pergunta do usuário.
+            source_file: Se informado, restringe a busca a chunks deste arquivo.
+                         Deve corresponder exatamente ao campo source_file no payload.
 
         Returns:
             Lista de RetrievedChunk ordenada por score decrescente (ordem do Qdrant).
@@ -57,13 +64,31 @@ class RAGService:
         # 1. Gerar embedding da query
         query_vector = await self._embedding_service.embed(query)
 
-        # 2. Buscar no Qdrant
+        # 2. Montar filtro por source_file (se especificado)
+        query_filter = None
+        if source_file:
+            from qdrant_client.models import FieldCondition, Filter, MatchValue, PayloadSchemaType  # noqa: PLC0415
+            # Garante que o índice keyword existe (necessário para filtros no Qdrant)
+            try:
+                await self._vector_db_client.create_payload_index(
+                    collection_name=self._collection_name,
+                    field_name="source_file",
+                    field_schema=PayloadSchemaType.KEYWORD,
+                )
+            except Exception:  # noqa: BLE001
+                pass  # Índice já existe ou erro não crítico — a busca tentará mesmo assim
+            query_filter = Filter(
+                must=[FieldCondition(key="source_file", match=MatchValue(value=source_file))]
+            )
+
+        # 3. Buscar no Qdrant
         try:
             results = await self._vector_db_client.search(
                 collection_name=self._collection_name,
                 query_vector=query_vector,
                 limit=self._top_k,
                 score_threshold=self._similarity_threshold,
+                query_filter=query_filter,
             )
         except Exception as exc:
             raise RuntimeError(
@@ -71,17 +96,18 @@ class RAGService:
                 f"(coleção '{self._collection_name}'): {exc}"
             ) from exc
 
-        # 3. Mapear resultados para RetrievedChunk
+        # 4. Mapear resultados para RetrievedChunk
+        # O payload usa: original_text, source_file, page_number, chunk_index
         chunks: list[RetrievedChunk] = []
         for hit in results:
             payload = hit.payload or {}
             metadata = SourceReference(
-                filename=payload.get("filename", ""),
-                page=payload.get("page"),
-                position=payload.get("position"),
+                filename=payload.get("source_file", payload.get("filename", "")),
+                page=payload.get("page_number", payload.get("page")),
+                position=payload.get("chunk_index", payload.get("position")),
             )
             chunk = RetrievedChunk(
-                content=payload.get("content", ""),
+                content=payload.get("original_text", payload.get("content", "")),
                 score=hit.score,
                 metadata=metadata,
             )

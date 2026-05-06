@@ -28,7 +28,7 @@ class FakeRAGService:
         self._chunks = chunks
         self.last_query: str | None = None
 
-    async def retrieve_chunks(self, query: str) -> list[RetrievedChunk]:
+    async def retrieve_chunks(self, query: str, source_file: str | None = None) -> list[RetrievedChunk]:
         self.last_query = query
         return self._chunks
 
@@ -36,7 +36,7 @@ class FakeRAGService:
 class FakeRAGServiceError:
     """RAGService fake que sempre lança RuntimeError."""
 
-    async def retrieve_chunks(self, query: str) -> list[RetrievedChunk]:
+    async def retrieve_chunks(self, query: str, source_file: str | None = None) -> list[RetrievedChunk]:
         raise RuntimeError("Falha ao conectar ao banco vetorial Qdrant")
 
 

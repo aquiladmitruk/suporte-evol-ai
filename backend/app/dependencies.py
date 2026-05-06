@@ -29,7 +29,10 @@ def get_settings() -> Settings:
 def _create_embedding_service() -> EmbeddingService:
     """Cria o singleton de EmbeddingService."""
     s = get_settings()
-    return EmbeddingService(model=s.EMBEDDING_MODEL, api_key=s.LLM_API_KEY)
+    return EmbeddingService(
+        model=s.EMBEDDING_MODEL,
+        api_key=s.LLM_API_KEY,
+    )
 
 
 def get_embedding_service() -> EmbeddingService:

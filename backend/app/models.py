@@ -61,17 +61,3 @@ class RetrievedChunk(BaseModel):
     metadata: SourceReference
 
 
-class ChunkMetadata(BaseModel):
-    """Metadados de um chunk gerado durante a ingestão de documentos."""
-
-    filename: str
-    page: Optional[int] = None
-    position: int
-    chunk_index: int
-
-
-class Chunk(BaseModel):
-    """Chunk de texto com seus metadados, usado no pipeline de ingestão."""
-
-    content: str
-    metadata: ChunkMetadata
